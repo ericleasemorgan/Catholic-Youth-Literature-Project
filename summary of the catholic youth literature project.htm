@@ -1,0 +1,95 @@
+<p>
+This posting summarizes the purpose, process, and technical infrastructure behind the <a href="http://dh.crc.nd.edu/sandbox/cyl/catalog/">Catholic Youth Literature Project</a>. In a few sentences, the purpose was two-fold: 1) to enable students to learn what it meant to be Catholic during the 19th century, and 2) to teach students the value of reading "closely" as well as from a "distance". The process of implementing the Project required the time and skills of a diverse set of individuals. The technical infrastructure is built on a large set of open source software, and the interface is far from perfect.
+</p>
+
+
+
+<h2>Purpose</h2>
+<p>
+The purpose of the project was two-fold: 1) to enable students to learn what it meant to be Catholic during the 19th century, and 2) to teach students the value of reading "closely" as well as from a "distance". To accomplish this goal a faculty member here at the University of Notre Dame (<strong>Sean O'Brien</strong>) sought to amass a corpus of materials written for Catholic youth during the 19th century. This corpus was expected to be accessible via tablet-based devices and provide a means for "reading" the texts in the traditional manner as well as through various text mining interfaces.
+</p>
+
+<p>
+During the Spring Semester students in a survey class were lent Android-based tablet computers. For a few weeks of the semester these same students were expected to select one or two texts from the amassed corpus for study. Specifically, they were expected to read the texts in the traditional manner (but on the tablet computer), and they were expected to "read" the texts through a set of text mining interfaces. In the end the the students were to outline three things: 1) what did you learn by reading the text in the traditional way, 2) what did you learn by reading the text through text mining, and 3) what did you learn by using both interfaces at once and at the same time. 
+</p>
+
+<p>
+Alas, the Spring semester has yet to be completed, and consequently what the students learned has yet to be determined.
+</p>
+
+
+<h2>Process</h2>
+
+<p>
+The process of implementing the Project required the time and skills of a diverse set of individuals. These individuals included the instructor (Sean O'Brien), two collection development librarians (<strong>Aedin Clements</strong> and <strong>Jean McManus</strong>), and librarian who could write computer programs (myself, <strong>Eric Lease Morgan</strong>). 
+</p>
+
+<p>
+As outlined above, O'Brien outlined the overall scope of the Project. 
+</p>
+
+<p>
+Clements and McManus provided the means of amassing the Project's corpus. A couple of bibliographies of Catholic youth literature were identified. Searches were done against the University of Notre Dame's library catalog. O'Brien suggested a few titles. From these lists items were selected for inclusion for purchase, from the University library's collection, as well as from the Internet Archive. The items for purchase were acquired. The items from the local collection were retrieved. And both sets of these items were sent off for digitization and optical character recognition. The results of the digitization process were then saved on a local Web server. At the same time, the items identified from the Internet Archive were mirrored locally and saved in the same Web space. About one hundred items items were selected in all, and they can be seen as a <a href="http://dh.crc.nd.edu/sandbox/cyl/corpus/">set of PDF files</a>. This process took about two months to complete.
+</p>
+
+
+<h2>Technical infrastructure</h2>
+
+<p>
+The Project's technical infrastructure enables "close" and "distant" reading, but the interface is far from perfect.
+</p>
+
+<p>
+From the reader's (I don't use the word "user" anymore) point of view, the Project is implemented through a set of Web pages. Behind the scenes, the Project is implemented with an almost dizzying array of free and open source software. The most significant processes implementing the Project are listed and briefly described below:
+</p>
+
+<ul>
+	<li><strong>mirroring</strong> - Much of the text mining services require extensive analysis of the original item. To accomplish this local copies of the texts were mirrored locally. By feeding the venerable <a href="http://www.gnu.org/software/wget/">wget</a> program with a list of URLs based on Internet Archive unique identifiers, mirroring content locally is trivial.</li>
+  
+	<li><strong>name-entity extraction</strong> - There was a desire to list the underlying names, places, and organizations from each text. These things can put a text into a context for the reader. Are there a lot of Irish names? Is there a preponderance of place names from the United States? To accomplish this task and assist in answering these sorts of questions, a Perl script was written around the <a href="http://nlp.stanford.edu/software/CRF-NER.shtml">Stanford Named Entity Recognizer</a>. This script (<a href="http://dh.crc.nd.edu/sandbox/cyl/bin/txt2ner.pl">txt2ner.pl</a>) extracts the entities, looks them up in DBedia, and saves metadata (abstracts, URLs to images, as well as latitudes & longitudes) describing the entities to a locally defined XML file for later processing. (<a href="http://dh.crc.nd.edu/sandbox/cyl/corpus/advicetoirishgir00cusa.ner">See an example.</a>) A CGI script (<a href="http://dh.crc.nd.edu/sandbox/cyl/bin/ner-cgi.pl">ner.cgi</a>) was then written to provide a reader-interface to these files.</li>
+  
+	<li><strong>parts-of-speech extraction</strong> - Just as lists of named entities can be enlightening so can lists of a text's parts-of-speech. Are the pronouns generally speaking masculine or feminine? Over all, are the verbs active or passive? To what degree are color words used words in the text? To begin to answer these sorts of questions, a Perl script exploited a Perl module called <a href="http://search.cpan.org/dist/Lingua-TreeTagger/">Lingua::TreeTagger</a>. The script (<a href="http://dh.crc.nd.edu/sandbox/cyl/bin/pos-tag.pl">pos-tag.pl</a>) extracts parts-of-speech from a text file and saves the result as a simple tab-delimited file for later use. (<a href="http://dh.crc.nd.edu/sandbox/cyl/corpus/advicetoirishgir00cusa.pos">See an example.</a>)</li>
+  
+	<li><strong>word/phrase tabulation and concordancing</strong> - To support rudimentary word and phrase tabulations, as well as a concordance interface, an Apache module (<a href="http://dh.crc.nd.edu/sandbox/cyl/bin/Concordances.pl">Concordance.pm</a>) was written around two more Perl modules. The first, <a href="http://search.cpan.org/dist/Lingua-EN-Ngram/">Lingua::EN::Ngram</a>, extracts word and phrase occurrences. The second, <a href="http://search.cpan.org/dist/Lingua-Concordance/">Lingua::Concordance</a>, provides an object-oriented keyword-in-context interface.</li>
+  
+	<li><strong>metadata enhancement and storage</strong> - A rudimentary catalog listing the items in the Project's corpus was implemented using a Perl module called <a href="http://search.cpan.org/dist/MyLibrary/">MyLibrary</a>. The MARC records describing each item in the corpus were first parsed. Desired metadata elements were mapped to MyLibrary fields, facets, and terms. Each item in the corpus was then analyzed in terms of word length as well as readability score through the use of yet another Perl module called <a href="http://search.cpan.org/dist/Lingua-EN-Fathom/">Lingua::EN::Fathom</a>. These additional metadata elements were then added to the underlying "catalog". To accomplish this set of tasks two additional Perl scripts were written (<a href="http://dh.crc.nd.edu/sandbox/cyl/bin/add-author-title.pl">add-author-title.pl</a> and <a href="http://dh.crc.nd.edu/sandbox/cyl/bin/add-size-readability.pl">add-size-readability.pl</a>).</li>
+  
+	<li><strong>HTML creation</strong> - A final Perl script was written to bring all the parts together. By looping through the "catalog" this script (<a href="http://dh.crc.nd.edu/sandbox/cyl/bin/make-catalog.pl">make-catalog.pl</a>) generates HTML files designed for display on tablet devices. These HTML files make heavy use of JQuery Mobile, and since no graphic designer was a part of the Project, <a href="http://jquerymobile.com/">JQuery Mobile</a> was a godsend.</li>
+</ul>
+
+<p>
+The result -- <a href="http://dh.crc.nd.edu/sandbox/cyl/catalog/">the Catholic Youth Literature Project</a> -- is a system that enables the reader to view the texts online as well as do some analysis against them. The system functions in that it does not output invalid data, and it does provide enhanced access to the texts.
+</p>
+
+<p style='text-align: center'>
+[HOME]<br/>
+The home page is simply a list of covers and associated titles.
+</p>
+
+<p style='text-align: center'>
+[close reading]<br/>
+The Internet Archive online reader is one option for "close" reading.
+</p>
+
+<p style='text-align: center'>
+[pos]<br/>
+The list of parts-of-speech provides the reader with some context. Notice how the word "good" is the most frequently used adjective.
+</p>
+
+<p style='text-align: center'>
+[histogram]<br/>
+The histogram feature of the concordance allows the reader to see where selected words appear in the text. For example, in this text the word "god" is used rather consistently.
+</p>
+
+<p style='text-align: center'>
+[network diagram]<br/>
+A network diagram allows the reader to see what words are used "in the same breath" as a given word. Here the word "god" is frequently used in conjunction with "good", "holy", "give", and "love". 
+</p>
+
+
+
+<h2>Summary</h2>
+
+<p>
+To summarize, the <a href="http://dh.crc.nd.edu/sandbox/cyl/catalog/">Catholic Youth Literature Project</a> is far from complete. For example, it has yet to be determined whether or not the implementation has enabled students to accomplish the Project's stated goals. Does it really enhance the use and understanding of a text? Second, the process of selecting, acquiring, digitizing, and integrating the texts into the library's collection is not streamlined. Finally, usability of the implementation is still in question. On the other hand, the implementation is more than a prototype and does exemplify how the process of reading is evolving over time.
+</p>
